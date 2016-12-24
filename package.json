@@ -1,0 +1,28 @@
+{
+  "name": "chatwork-redis-queue",
+  "version": "0.0.1",
+  "description": "Job worker for sending message to ChatWork using Redis as queue.",
+  "main": "src/worker.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/takatama/chatwork-redis-queue.git"
+  },
+  "keywords": [
+    "redis",
+    "bull",
+    "chatwork"
+  ],
+  "author": "Hirokazu Takatama",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/takatama/chatwork-redis-queue/issues"
+  },
+  "homepage": "https://github.com/takatama/chatwork-redis-queue#readme",
+  "dependencies": {
+    "bull": "^2.0.0",
+    "request": "^2.79.0"
+  }
+}
