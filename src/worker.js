@@ -38,6 +38,8 @@ var handleRateLimit = function (resetTime, data) {
     });
 };
 
+exports.handleRateLimit = handleRateLimit;
+
 var sendMessage = function (job) {
     return new Promise(function (resolve, reject) {
         var roomId = job.data.roomId;
@@ -56,7 +58,7 @@ var sendMessage = function (job) {
                 reject(error);
             } else if (response.statusCode === 429) {
                 var resetTime = parseInt(response.headers['x-ratelimit-reset'] + '000', 10);
-                handleRateLimit(resetTime, job.data);
+                exports.handleRateLimit(resetTime, job.data);
                 reject(new Error('Rate limit'));
             } else if (response.statusCode === 200) {
                 var res = JSON.parse(body);
@@ -67,7 +69,9 @@ var sendMessage = function (job) {
     });
 };
 
-messages.resume().then(function () { // This worker might be paused if Redis is shutdown unexpectedly.
+exports.sendMessage = sendMessage;
+
+messages.resume().then(function () { // This worker might be paused if Redis had been shutdown unexpectedly.
     messages.process(function (job) {
         return sendMessage(job);
     });
