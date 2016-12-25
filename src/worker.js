@@ -61,8 +61,10 @@ var sendMessage = function (job, done) {
     });
 };
 
-messages.process(function (job, done) {
-    sendMessage(job, done);
+messages.resume().then(function () { // This worker might be paused if Redis is shutdown unexpectedly.
+    messages.process(function (job, done) {
+        sendMessage(job, done);
+    });
 });
 
 fs.readFile('.chatwork.credential', 'utf8', function (err, data) {
