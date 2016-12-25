@@ -19,7 +19,11 @@ var sendMessage = function (roomId, message, repeat) {
         );
     }
 
-    Promise.all(promises).then(function () {
+    Promise.all(promises).then(function (jobs) {
+        var jobIds = jobs.map(function (job) {
+            return job.jobId;
+        });
+        console.log('Job Id: ' + jobIds);
         process.exit(0);
     }).catch(function (err) {
         console.error(err);
