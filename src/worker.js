@@ -64,6 +64,9 @@ var sendMessage = function (job) {
                 var res = JSON.parse(body);
                 console.log('message-id: ' + res['message_id']);
                 resolve(res);
+            } else {
+                console.error('ERROR statusCode=' + response.statusCode + ', body=' + response.body);
+                reject(new Error(response.body));
             }
         });
     });
