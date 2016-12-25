@@ -38,36 +38,38 @@ var handleRateLimit = function (resetTime, data) {
     });
 };
 
-var sendMessage = function (job, done) {
-    var roomId = job.data.roomId;
-    var message = job.data.message;
+var sendMessage = function (job) {
+    return new Promise(function (resolve, reject) {
+        var roomId = job.data.roomId;
+        var message = job.data.message;
 
-    request.post({
-        url: 'https://api.chatwork.com/v1/rooms/' + roomId + '/messages',
-        headers: {
-            'X-ChatWorkToken': token
-        },
-        form: {
-            body: message
-        }
-    }, function (error, response, body) {
-        if (error) {
-            done(error);
-        } else if (response.statusCode === 429) {
-            var resetTime = parseInt(response.headers['x-ratelimit-reset'] + '000', 10);
-            handleRateLimit(resetTime, job.data);
-            done(new Error('Rate limit'));
-        } else if (response.statusCode === 200) {
-            var res = JSON.parse(body);
-            console.log('message_id: ' + res['message_id']);
-            done();
-        }
+        request.post({
+            url: 'https://api.chatwork.com/v1/rooms/' + roomId + '/messages',
+            headers: {
+                'X-ChatWorkToken': token
+            },
+            form: {
+                body: message
+            }
+        }, function (error, response, body) {
+            if (error) {
+                reject(error);
+            } else if (response.statusCode === 429) {
+                var resetTime = parseInt(response.headers['x-ratelimit-reset'] + '000', 10);
+                handleRateLimit(resetTime, job.data);
+                reject(new Error('Rate limit'));
+            } else if (response.statusCode === 200) {
+                var res = JSON.parse(body);
+                console.log('message-id: ' + res['message_id']);
+                resolve(res);
+            }
+        });
     });
 };
 
 messages.resume().then(function () { // This worker might be paused if Redis is shutdown unexpectedly.
-    messages.process(function (job, done) {
-        sendMessage(job, done);
+    messages.process(function (job) {
+        return sendMessage(job);
     });
 });
 
