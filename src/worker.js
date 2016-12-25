@@ -14,19 +14,17 @@ var pushBack = function (data) {
 
 exports.pushBack = pushBack;
 
+var sleep = function (millisec) {
+    return new Promise(function (resolve) {
+        setTimeout(resolve, millisec);
+    });
+};
+
 var suspendWorker = function (millisec) {
-    return new Promise(function (resolve, reject) {
-        messages.pause().then(function () {
-            setTimeout(function () {
-                messages.resume().then(function () {
-                    resolve();
-                }).catch(function (err) {
-                    reject(err);
-                });
-            }, millisec);
-        }).catch(function (err) {
-            reject(err);
-        });
+    return messages.pause().then(function () {
+        return sleep(millisec);
+    }).then(function () {
+        return messages.resume();
     });
 };
 
