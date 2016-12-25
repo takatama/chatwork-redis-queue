@@ -1,22 +1,15 @@
 #!/usr/bin/env node
-var Queue = require('bull');
-var messages = Queue('chatwork_send_message');
+var client = require('./client');
 var program = require('commander');
 
-var sendMessage = function (roomId, message, repeat) {
+var sendMessages = function (roomId, message, repeat) {
     var i,
         len = repeat ? repeat : 1,
         promises = [];
 
     for (i = 0; i < len; i++) {
-        promises.push(
-            messages.add({
-                roomId: roomId,
-                message: repeat ? message + ' (' + (i + 1) + ')' : message
-            }, {
-                removeOnComplete: true
-            })
-        );
+        var m = repeat ? message + ' (' + (i + 1) + ')' : message;
+        promises.push(client.sendMessage(roomId, m));
     }
 
     Promise.all(promises).then(function (jobs) {
@@ -36,5 +29,5 @@ program
     .arguments('<roomId> <message>')
     .option('-r, --repeat <n>', 'repeat sending <n> times.', parseInt)
     .action(function (roomId, message) {
-        sendMessage(roomId, message, program.repeat);
+        sendMessages(roomId, message, program.repeat);
     }).parse(process.argv);
