@@ -31,10 +31,10 @@ var suspendWorker = function (millisec) {
 var handleRateLimit = function (resetTime, data) {
     var waitMillisec = resetTime - Date.now();
     console.log('Rate limit will be reset at ' + new Date(resetTime) + ' (after ' + waitMillisec + ' millisec).');
-    pushBack(data).then(function () {
-        suspendWorker(waitMillisec).then(function () {
-            console.log('...resumed at ' + new Date());
-        });
+    return pushBack(data).then(function () {
+        return suspendWorker(waitMillisec);
+    }).then(function () {
+        console.log('...resumed at ' + new Date());
     });
 };
 
