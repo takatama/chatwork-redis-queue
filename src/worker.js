@@ -12,6 +12,8 @@ var pushBack = function (data) {
     });
 };
 
+exports.pushBack = pushBack;
+
 var suspendWorker = function (millisec) {
     return new Promise(function (resolve, reject) {
         messages.pause().then(function () {
@@ -28,11 +30,13 @@ var suspendWorker = function (millisec) {
     });
 };
 
+exports.suspendWorker = suspendWorker;
+
 var handleRateLimit = function (resetTime, data) {
     var waitMillisec = resetTime - Date.now();
     console.log('Rate limit will be reset at ' + new Date(resetTime) + ' (after ' + waitMillisec + ' millisec).');
-    return pushBack(data).then(function () {
-        return suspendWorker(waitMillisec);
+    return exports.pushBack(data).then(function () {
+        return exports.suspendWorker(waitMillisec);
     }).then(function () {
         console.log('...resumed at ' + new Date());
     });
