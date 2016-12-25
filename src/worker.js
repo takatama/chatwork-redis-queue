@@ -5,8 +5,8 @@ var fs = require('fs');
 var request = require('request');
 var token;
 
-var pushBack = function (job) {
-    return messages.add(job.data, {
+var pushBack = function (data) {
+    return messages.add(data, {
         lifo: true,
         removeOnComplete: true
     });
@@ -28,6 +28,16 @@ var suspendWorker = function (millisec) {
     });
 };
 
+var handleRateLimit = function (resetTime, data) {
+    var waitMillisec = resetTime - Date.now();
+    console.log('Rate limit will be reset at ' + new Date(resetTime) + ' (after ' + waitMillisec + ' millisec).');
+    pushBack(data).then(function () {
+        suspendWorker(waitMillisec).then(function () {
+            console.log('...resumed at ' + new Date());
+        });
+    });
+};
+
 var sendMessage = function (job, done) {
     var roomId = job.data.roomId;
     var message = job.data.message;
@@ -45,14 +55,8 @@ var sendMessage = function (job, done) {
             done(error);
         } else if (response.statusCode === 429) {
             var resetTime = parseInt(response.headers['x-ratelimit-reset'] + '000', 10);
-            var waitMillisec = resetTime - Date.now();
-            console.log('Rate limit will be reset at ' + new Date(resetTime) + ' (after ' + waitMillisec + ' millisec).');
+            handleRateLimit(resetTime, job.data);
             done(new Error('Rate limit'));
-            pushBack(job).then(function () {
-                suspendWorker(waitMillisec).then(function () {
-                    console.log ('...resumed at ' + new Date());
-                });
-            });
         } else if (response.statusCode === 200) {
             var res = JSON.parse(body);
             console.log('message_id: ' + res['message_id']);
