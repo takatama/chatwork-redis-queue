@@ -4,20 +4,27 @@ var messages = Queue('chatwork_send_message');
 var program = require('commander');
 
 var sendMessage = function (roomId, message, repeat) {
-    var i, len = repeat ? repeat: 1, added = 0;
+    var i,
+        len = repeat ? repeat : 1,
+        promises = [];
+
     for (i = 0; i < len; i++) {
-        messages.add({
-            roomId: roomId,
-            message: repeat ? message + ' (' + (i + 1) + ')' : message
-        }, {
-            removeOnComplete: true
-        }).then(function () {
-            added += 1;
-            if (added == len) {
-                process.exit(0);
-            }
-        });
+        promises.push(
+            messages.add({
+                roomId: roomId,
+                message: repeat ? message + ' (' + (i + 1) + ')' : message
+            }, {
+                removeOnComplete: true
+            })
+        );
     }
+
+    Promise.all(promises).then(function () {
+        process.exit(0);
+    }).catch(function (err) {
+        console.error(err);
+        process.exit(1);
+    });
 };
 
 program
